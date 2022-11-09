@@ -27,15 +27,14 @@ pipeline {
     stage('Build Docker Image') {
       agent any
       steps {
-        sh 'docker image tag hello-world swgu931/hello-world:latest'
-        sh 'docker image tag hello-world swgu931/hello-world:$BUILD_NUMBER'
+        sh 'docker build -t hello-world .'
       }
     }
     stage('Tag Docker Image') {
       agent any
       steps {
-          sh 'docker image push swgu931/hello-world:latest'
-          sh 'docker image push swgu931/hello-world:$BUILD_NUMBER'
+          sh 'docker image tag swgu931/hello-world:latest'
+          sh 'docker image tag swgu931/hello-world:$BUILD_NUMBER'
       }
     }
     stage('Publish Docker Image') {
