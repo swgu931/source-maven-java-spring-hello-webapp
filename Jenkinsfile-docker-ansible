@@ -5,7 +5,7 @@ pipeline {
     stage('Checkout') {
       agent any
       steps {
-        git branch: 'main', url: 'https://github.com/swgu931/source-maven-java-spring-hello-webapp.git'
+        git branch: 'main', url: '<URL>'
       }
     }
     stage('Build') {
@@ -27,14 +27,15 @@ pipeline {
     stage('Build Docker Image') {
       agent any
       steps {
-        sh 'docker image build -t hello-world .'
+        sh 'docker image tag hello-world swgu931/hello-world:latest'
+        sh 'docker image tag hello-world swgu931/hello-world:$BUILD_NUMBER'
       }
     }
     stage('Tag Docker Image') {
       agent any
       steps {
-        sh 'docker image tag hello-world swgu931/hello-world:latest'
-        sh 'docker image tag hello-world swgu931/hello-world:$BUILD_NUMBER'
+          sh 'docker image push swgu931/hello-world:latest'
+          sh 'docker image push swgu931/hello-world:$BUILD_NUMBER'
       }
     }
     stage('Publish Docker Image') {
@@ -48,12 +49,13 @@ pipeline {
     }
     stage('Run Docker Container') {
       agent {
-        docker { image 'docker:dind' }
+        docker { 
+          image 'swug931/jenkins-ansible'
+          args '-u 0:0 -e DOCKER_HOST=tcp://<DOCKER_PRIVATE_IP>:2375'
+        }
       }
       steps {
-        sh 'docker -H tcp://172.31.26.214:2375 container stop hello-world'
-        sh 'docker -H tcp://172.31.26.214:2375 container rm hello-world'
-        sh 'docker -H tcp://172.31.26.214:2375 container run --detach --name hello-world -p 80:8080 swgu931/hello-world:$BUILD_NUMBER'
+        ansiblePlaybook(playbook: 'docker-container-deploy.yaml')
       }
     }
   }
