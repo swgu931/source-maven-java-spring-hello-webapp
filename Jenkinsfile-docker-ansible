@@ -5,7 +5,7 @@ pipeline {
     stage('Checkout') {
       agent any
       steps {
-        git branch: 'main', url: '<URL>'
+        git branch: 'main', url: 'https://github.com/swgu931/source-maven-java-spring-hello-webapp.git'        
       }
     }
     stage('Build') {
@@ -51,7 +51,7 @@ pipeline {
       agent {
         docker { 
           image 'swug931/jenkins-ansible'
-          args '-u 0:0 -e DOCKER_HOST=tcp://<DOCKER_PRIVATE_IP>:2375'
+          args '-u 0:0 -e DOCKER_HOST=tcp://172.31.26.214:2375'
         }
       }
       steps {
