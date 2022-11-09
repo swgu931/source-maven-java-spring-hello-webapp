@@ -1,0 +1,56 @@
+pipeline {
+  agent none
+
+  stages {
+    stage('Checkout') {
+      agent any
+      steps {
+        git branch: 'main', url: 'https://github.com/swgu931/source-maven-java-spring-hello-webapp.git'
+      }
+    }
+    stage('Build') {
+      agent {
+        docker { image 'maven:3-openjdk-8' }
+      }
+      steps {
+        sh 'mvn clean package -DskipTests=true'
+      }
+    }
+    stage('Test') {
+      agent {
+        docker { image 'maven:3-openjdk-8' }
+      }
+      steps {
+        sh 'mvn test'
+      }
+    }
+    stage('Build Docker Image') {
+      agent any
+      steps {
+        sh 'build -t hello-world'
+      }
+    }
+    stage('Tag Docker Image') {
+      agent any
+      steps {
+        sh 'tag hello-word swgu931/hello-world:latest'
+      }
+    }
+    stage('Publish Docker Image') {
+      agent any
+      steps {
+        withDockerRegistry(credentialsId: 'dckr_pat_z5Z_-W3vjni2-t_iPs-8d_y5P3s', url: 'https://index.docker.io/v1/') {
+          sh 'push'
+        }
+      }
+    }
+    stage('Run Docker Container') {
+      agent {
+        docker { image 'docker:dind' }
+      }
+      steps {
+        sh 'docker -H tcp://172.31.26.214:2375 container run --detach --name hello-world -p 80:8080 swgu931/hello-world:latest'
+      }
+    }
+  }
+}
