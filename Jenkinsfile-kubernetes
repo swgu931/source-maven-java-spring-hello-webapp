@@ -12,6 +12,12 @@ spec:
     - sleep
     args:
     - infinity
+  - name: git
+    image: alpine/git
+    command:
+    - sleep
+    args:
+    - infinity
   - name: kaniko
     image: gcr.io/kaniko-project/executor:debug
     command:
@@ -30,6 +36,9 @@ spec:
         path: config.json
 '''
     }
+  }
+  triggers {
+    githubPush()
   }
   stages {
     stage('Checkout') {
@@ -62,13 +71,13 @@ spec:
     }
     stage('Update K8s Manifests & Push') {
       environment {
-        githubUser = 'Nevertheless' 
-        githubEmail = 'swgu931@chol.com' 
-        githubId = 'swgu931' 
-        githubRepo = 'jenkins-kube-deploy' 
+        githubUser = 'Nevertheless'
+        githubEmail = 'swgu931@chol.com'
+        githubId = 'swgu931'
+        githubRepo = 'jenkins-kube-deploy'
         githubURL = "https://github.com/${githubId}/${githubRepo}.git"
-        dockerhubId = 'swgu931' 
-        dockerhubRepo = 'hello-world' 
+        dockerhubId = 'swgu931'
+        dockerhubRepo = 'hello-world'
       }
       steps {
         container('git') {
