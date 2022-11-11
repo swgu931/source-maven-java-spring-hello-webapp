@@ -60,22 +60,28 @@ spec:
         }
       }
     }
-    stage('Update K8s Manifests & Push') {
+    sstage('Update K8s Manifests & Push') {
       environment {
-        githubUser = 'Nevertheless' //Ryan Jang
-        githubEmail = 'swgu931@chol.com' //c1t1d0s7@example.com
-        githubId = 'swgu931' //c1t1d0s7 
-        githubRepo = 'jenkins-kube-deploy' //jenkins-kube-deploy
+        githubUser = 'Nevertheless' 
+        githubEmail = 'swgu931@chol.com' 
+        githubId = 'swgu931' 
+        githubRepo = 'jenkins-kube-deploy' 
         githubURL = "https://github.com/${githubId}/${githubRepo}.git"
-        dockerhubId = 'swgu931' //c1t1d0s7
-        dockerhubRepo = 'hello-world' //hello-world
+        dockerhubId = 'swgu931' 
+        dockerhubRepo = 'hello-world' 
       }
       steps {
         container('git') {
           git branch: 'main', credentialsId: 'github-credential', url: "${githubURL}"
-          sh "git config --global --add safe.directory ${WORKSPACE}"
+          sh "git config --global --add safe.directory ${workspace}"
           sh "git config --global user.name ${githubUser}"
           sh "git config --global user.email ${githubEmail}"
+          sh 'sed -i "s/image:.*/image: ${dockerhubId}\\/${dockerhubRepo}:${BUILD_NUMBER}/g" deployment.yaml'
+          sh 'git add deployment.yaml'
+          sh 'git commit -m "Jenkins Build Number - ${BUILD_NUMBER}"'
+          withCredentials([gitUsernamePassword(credentialsId: 'github-credential', gitToolName: 'Default')]) {
+            sh 'git push --set-upstream origin main'
+          }
         }
       }
     }
