@@ -60,7 +60,7 @@ spec:
         }
       }
     }
-    sstage('Update K8s Manifests & Push') {
+    stage('Update K8s Manifests & Push') {
       environment {
         githubUser = 'Nevertheless' 
         githubEmail = 'swgu931@chol.com' 
